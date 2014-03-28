@@ -48,10 +48,10 @@
     </table>
 
     <p style="font-weight: bold;">
-        <shiro:hasRole name="role1">You have role 1.<br/></shiro:hasRole>
-        <shiro:lacksRole name="role1">You do not have role 1.<br/></shiro:lacksRole>
-        <shiro:hasRole name="role2">You have role 2.<br/></shiro:hasRole>
-        <shiro:lacksRole name="role2">You do not have role 2.<br/></shiro:lacksRole>
+        <shiro:hasRole name="admin">You have role admin.<br/></shiro:hasRole>
+        <shiro:lacksRole name="admin">You do not have role admin.<br/></shiro:lacksRole>
+        <shiro:hasRole name="test">You have role test.<br/></shiro:hasRole>
+        <shiro:lacksRole name="test">You do not have role test.<br/></shiro:lacksRole>
     </p>
 
     <p style="font-weight: bold;">

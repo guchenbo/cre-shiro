@@ -3,7 +3,8 @@
  */
 package cre.shiro.realm;
 
-import java.sql.SQLException;
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.annotation.Resource;
 
@@ -14,15 +15,16 @@ import org.apache.shiro.authc.AuthenticationToken;
 import org.apache.shiro.authc.SimpleAuthenticationInfo;
 import org.apache.shiro.authc.UnknownAccountException;
 import org.apache.shiro.authc.UsernamePasswordToken;
+import org.apache.shiro.authz.AuthorizationException;
 import org.apache.shiro.authz.AuthorizationInfo;
-import org.apache.shiro.config.ConfigurationException;
+import org.apache.shiro.authz.SimpleAuthorizationInfo;
 import org.apache.shiro.realm.jdbc.JdbcRealm;
 import org.apache.shiro.subject.PrincipalCollection;
-import org.apache.shiro.util.ByteSource;
-import org.apache.shiro.util.JdbcUtils;
 
 import cre.domain.User;
+import cre.repository.RoleToPermissionRepository;
 import cre.repository.UserRepository;
+import cre.repository.UserToRoleRepository;
 
 /**
  * @author Cre.Gu
@@ -34,6 +36,10 @@ public class CreDelegateJdbcRealm extends JdbcRealm {
 
 	@Resource
 	private UserRepository userRepository;
+	@Resource
+	private UserToRoleRepository userToRoleRepository;
+	@Resource
+	private RoleToPermissionRepository roleToPermissionRepository;
 
 	@Override
 	protected AuthenticationInfo doGetAuthenticationInfo(
@@ -52,7 +58,6 @@ public class CreDelegateJdbcRealm extends JdbcRealm {
 		User user = userRepository.findByUsername(username);
 
 		String password = user.getPassword();
-		String salt = null;
 
 		if (password == null) {
 			throw new UnknownAccountException("No account found for user ["
@@ -62,18 +67,31 @@ public class CreDelegateJdbcRealm extends JdbcRealm {
 		info = new SimpleAuthenticationInfo(username, password.toCharArray(),
 				getName());
 
-		if (salt != null) {
-			info.setCredentialsSalt(ByteSource.Util.bytes(salt));
-		}
-
 		return info;
 	}
 
 	@Override
 	protected AuthorizationInfo doGetAuthorizationInfo(
 			PrincipalCollection principals) {
-		// TODO Auto-generated method stub
-		return super.doGetAuthorizationInfo(principals);
+
+		if (principals == null) {
+			throw new AuthorizationException(
+					"PrincipalCollection method argument cannot be null.");
+		}
+
+		String username = (String) getAvailablePrincipal(principals);
+
+		Set<String> roleNames = userToRoleRepository.findRoleName(username);
+		Set<String> permissions = new HashSet<String>();
+
+		for (String roleName : roleNames) {
+			permissions.addAll(roleToPermissionRepository
+					.findPermissions(roleName));
+		}
+
+		SimpleAuthorizationInfo info = new SimpleAuthorizationInfo(roleNames);
+		info.setStringPermissions(permissions);
+		return info;
 	}
 
 }

@@ -64,7 +64,7 @@
 		<property name="credentialsMatcher">
 			<!-- The 'bootstrapDataPopulator' Sha256 hashes the password (using the 
 				username as the salt) then base64 encodes it: -->
-			<bean class="org.apache.shiro.authc.credential.PasswordMatcher"></bean>
+			<bean class="org.apache.shiro.authc.credential.SimpleCredentialsMatcher"></bean>
 		</property>
 	</bean>
 
